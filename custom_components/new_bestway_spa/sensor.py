@@ -1,20 +1,21 @@
+from homeassistant.const import UnitOfTemperature, UnitOfTime
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from datetime import datetime, date
 from .const import DOMAIN
 
 SENSOR_TYPES = [
-    ("water_temperature", "Water Temperature", "°C"),
-    ("is_online", "Connection Status", None),
-    ("temperature_unit", "Temperature Unit", None),
-    ("warning", "Warning", None),
-    ("error_code", "Error Code", None),
-    ("hydrojet_state", "Hydrojet", None),
-    ("connect_type", "Connection Type", None),
-    ("wifi_version", "WiFi Version", None),
-    ("ota_status", "OTA Status", None),
-    ("mcu_version", "MCU Version", None),
-    ("trd_version", "TRD Version", None)
+    ("water_temperature", "Water Temperature"),
+    ("is_online", "Connection Status"),
+    ("temperature_unit", "Temperature Unit"),
+    ("warning", "Warning"),
+    ("error_code", "Error Code"),
+    ("hydrojet_state", "Hydrojet"),
+    ("connect_type", "Connection Type"),
+    ("wifi_version", "WiFi Version"),
+    ("ota_status", "OTA Status"),
+    ("mcu_version", "MCU Version"),
+    ("trd_version", "TRD Version")
 ]
 
 async def async_setup_entry(hass, entry, async_add_entities):
@@ -22,8 +23,8 @@ async def async_setup_entry(hass, entry, async_add_entities):
     coordinator = data["coordinator"]
     device_id = entry.title.lower().replace(' ', '_')
     sensors = [
-        BestwaySpaSensor(coordinator, key, name, unit, entry.title, device_id)
-        for key, name, unit in SENSOR_TYPES
+        BestwaySpaSensor(coordinator, key, name, entry.title, device_id)
+        for key, name in SENSOR_TYPES
     ]
     sensors.extend([
         DaysSinceSensor(coordinator, entry, "Filter", "filter_last_change", device_id),
@@ -32,13 +33,12 @@ async def async_setup_entry(hass, entry, async_add_entities):
     async_add_entities(sensors)
 
 class BestwaySpaSensor(CoordinatorEntity, SensorEntity):
-    def __init__(self, coordinator, key, name, unit, title, device_id):
+    def __init__(self, coordinator, key, name, title, device_id):
         super().__init__(coordinator)
         self._key = key
         self._attr_name = f"{title} {name}"
         self._attr_unique_id = f"{device_id}_{key}"
         self._device_id = device_id
-        self._attr_native_unit_of_measurement = unit
 
         # enable long-term statistics for water temperature
         if self._key == "water_temperature":
@@ -59,15 +59,15 @@ class BestwaySpaSensor(CoordinatorEntity, SensorEntity):
     def native_value(self):
         if self._key == "temperature_unit":
             raw = self.coordinator.data.get("temperature_unit", 1)
-            return "°F" if raw == 0 else "°C" 
+            return UnitOfTemperature.FAHRENHEIT if raw == 0 else UnitOfTemperature.CELSIUS
         return self.coordinator.data.get(self._key)
 
     @property
     def native_unit_of_measurement(self):
         if self._key == "water_temperature":
             unit_code = self.coordinator.data.get("temperature_unit", 1)
-            return "°F" if unit_code == 0 else "°C"
-        return self._attr_native_unit_of_measurement
+            return UnitOfTemperature.FAHRENHEIT if unit_code == 0 else UnitOfTemperature.CELSIUS
+        return None
 
 class DaysSinceSensor(CoordinatorEntity, SensorEntity):
     def __init__(self, coordinator, entry, name, key, device_id):
@@ -77,7 +77,7 @@ class DaysSinceSensor(CoordinatorEntity, SensorEntity):
         self._key = key
         self._device_id = device_id
         self._attr_unique_id = f"{device_id}_{key}_days_since"
-        self._attr_native_unit_of_measurement = "days"
+        self._attr_native_unit_of_measurement = UnitOfTime.DAYS
         self._attr_device_class = "duration"
         self._attr_state_class = "total_increasing"
 
