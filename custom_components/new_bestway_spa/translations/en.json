@@ -26,16 +26,32 @@
     }
   },
   "entity": {
+    "button": {
+      "filter_last_change": { "name": "Reset Days Since Filter"},
+      "chlorine_last_add":{ "name": "Reset Days Since Chlorine" }
+    },
+    "climate": {
+      "thermostat": { "name": "Thermostat" }
+    },
     "switch": {
       "power_state": { "name": "Spa Power" },
       "filter_state": { "name": "Filter" },
       "heater_state": { "name": "Heater" },
-      "wave_state": { "name": "Bubbles / Wave" }
+      "hydrojet_state": { "name": "Hydrojet" },
+      "wave_state": {
+        "name": "Bubbles / Wave",
+        "state_attributes": { "bubble_level": {"name": "Bubble Level" }, "wave_state_value": {"name": "Wave State Value" } }
+      }
     },
     "number": {
       "temperature_setting": { "name": "Target Temperature" }
     },
+    "select": {
+      "bubble_mode": { "name": "Bubbles" }
+    },
     "sensor": {
+      "filter_last_change": { "name": "Days Since Filter" },
+      "chlorine_last_add": { "name": "Days Since Chlorine" },
       "water_temperature": { "name": "Water Temperature" },
       "is_online": { "name": "Connection Status" },
       "temperature_unit": { "name": "Temperature Unit" },

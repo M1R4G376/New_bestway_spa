@@ -22,11 +22,13 @@ async def async_setup_entry(hass, entry, async_add_entities):
     ])
 
 class BestwaySpaSwitch(CoordinatorEntity, SwitchEntity):
+    has_entity_name = True
     def __init__(self, coordinator, api, key, name, title, device_id):
         super().__init__(coordinator)
         self._api = api
         self._key = key
-        self._attr_name = f"{title} {name}"
+        self._attr_translation_key = key
+        self._attr_translation_placeholders = {"name": f"{title} {name}"}
         self._attr_unique_id = f"{device_id}_{key}"
         self._device_id = device_id
 
@@ -34,7 +36,8 @@ class BestwaySpaSwitch(CoordinatorEntity, SwitchEntity):
     def device_info(self):
         return {
             "identifiers": {(DOMAIN, self._device_id)},
-            "name": self._attr_name.split(" ")[0],  # lub np. self._device_id
+            "translation_key": self._attr_translation_key,
+            "translation_placeholders": self._attr_translation_placeholders,
             "manufacturer": "Bestway",
             "model": "Spa",
             "sw_version": self.hass.data[DOMAIN].get("manifest_version", "unknown")
@@ -57,26 +60,26 @@ class BestwaySpaSwitch(CoordinatorEntity, SwitchEntity):
     @property
     def extra_state_attributes(self):
         if self._key == "wave_state":
-            niveau = self.coordinator.data.get("wave_state", 0)
-            if niveau == 0:
+            wave_state = self.coordinator.data.get("wave_state", 0)
+            if wave_state == 0:
                 mode = "off"
-            elif niveau == 100:
+            elif wave_state == 100:
                 mode = "L1"
             else:
                 mode = "L2"
             return {
-                "niveau_bulles": mode,
-                "valeur_wave_state": niveau
+                "bubble_level": mode,
+                "wave_state_value": wave_state
             }
         return {}
 
 
-    async def async_turn_on(self, **kwargs):
+    async def async_turn_on(self):
         await self._api.set_state(self._key, 1)
         await asyncio.sleep(2)
         await self.coordinator.async_request_refresh()
 
-    async def async_turn_off(self, **kwargs):
+    async def async_turn_off(self):
         await self._api.set_state(self._key, 0)
         await asyncio.sleep(2)
         await self.coordinator.async_request_refresh()

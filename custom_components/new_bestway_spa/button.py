@@ -12,17 +12,15 @@ async def async_setup_entry(hass, entry, async_add_entities):
     ])
 
 class ResetButton(CoordinatorEntity, ButtonEntity):
+    has_entity_name = True
     def __init__(self, coordinator, hass, entry, name, key, device_id):
         super().__init__(coordinator)
         self._hass = hass
         self._entry = entry
-        self._name = name
+        self._attr_translation_key = key
+        self._attr_translation_placeholders = {"name": f"{name}"}
         self._key = key
         self._device_id = device_id
-
-    @property
-    def name(self):
-        return self._name
 
     @property
     def unique_id(self):
@@ -32,7 +30,8 @@ class ResetButton(CoordinatorEntity, ButtonEntity):
     def device_info(self):
         return {
             "identifiers": {(DOMAIN, self._device_id)},
-            "name": self._entry.title,
+            "translation_key": self._attr_translation_key,
+            "translation_placeholders": self._attr_translation_placeholders,
             "manufacturer": "Bestway",
             "model": "Spa",
             "sw_version": self.hass.data[DOMAIN].get("manifest_version", "unknown"),

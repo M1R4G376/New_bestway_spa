@@ -32,10 +32,12 @@ async def async_setup_entry(hass, entry, async_add_entities):
     async_add_entities(sensors)
 
 class BestwaySpaSensor(CoordinatorEntity, SensorEntity):
+    has_entity_name = True
     def __init__(self, coordinator, key, name, unit, title, device_id):
         super().__init__(coordinator)
         self._key = key
-        self._attr_name = f"{title} {name}"
+        self._attr_translation_key = key
+        self._attr_translation_placeholders = {"name": f"{title} {name}"}
         self._attr_unique_id = f"{device_id}_{key}"
         self._device_id = device_id
         self._attr_native_unit_of_measurement = unit
@@ -49,7 +51,8 @@ class BestwaySpaSensor(CoordinatorEntity, SensorEntity):
     def device_info(self):
         return {
             "identifiers": {(DOMAIN, self._device_id)},
-            "name": self._attr_name.split(" ")[0],  # lub np. self._device_id
+            "translation_key": self._attr_translation_key,
+            "translation_placeholders": self._attr_translation_placeholders,
             "manufacturer": "Bestway",
             "model": "Spa",
             "sw_version": self.hass.data[DOMAIN].get("manifest_version", "unknown")
@@ -70,10 +73,12 @@ class BestwaySpaSensor(CoordinatorEntity, SensorEntity):
         return self._attr_native_unit_of_measurement
 
 class DaysSinceSensor(CoordinatorEntity, SensorEntity):
+    has_entity_name = True
     def __init__(self, coordinator, entry, name, key, device_id):
         super().__init__(coordinator)
         self._entry = entry
-        self._attr_name = f"{entry.title} Days Since {name}"
+        self._attr_translation_key = key
+        self._attr_translation_placeholders = {"name": f"{entry.title} Days Since {name}"}
         self._key = key
         self._device_id = device_id
         self._attr_unique_id = f"{device_id}_{key}_days_since"
@@ -85,7 +90,8 @@ class DaysSinceSensor(CoordinatorEntity, SensorEntity):
     def device_info(self):
         return {
             "identifiers": {(DOMAIN, self._device_id)},
-            "name": self._entry.title,
+            "translation_key": self._attr_translation_key,
+            "translation_placeholders": self._attr_translation_placeholders,
             "manufacturer": "Bestway",
             "model": "Spa",
             "sw_version": self.hass.data[DOMAIN].get("manifest_version", "unknown")

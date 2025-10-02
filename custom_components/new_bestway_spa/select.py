@@ -20,13 +20,14 @@ async def async_setup_entry(hass, entry, async_add_entities):
 
 class BestwaySpaBubbleSelect(CoordinatorEntity, SelectEntity):
     """Select entity to control the bubble mode of the Bestway Spa."""
-
+    has_entity_name = True
     _attr_options = OPTIONS
 
     def __init__(self, coordinator, api, title, device_id):
         super().__init__(coordinator)
         self._api = api
-        self._attr_name = f"{title} Bulles"
+        self._attr_translation_key = "bubble_mode"
+        self._attr_translation_placeholders = {"name": f"{title} Bubbles"}
         self._attr_unique_id = f"{device_id}_bubble_mode"
         self._device_id = device_id
 
@@ -34,7 +35,8 @@ class BestwaySpaBubbleSelect(CoordinatorEntity, SelectEntity):
     def device_info(self):
         return {
             "identifiers": {(DOMAIN, self._device_id)},
-            "name": self._attr_name.split(" ")[0],
+            "translation_key": self._attr_translation_key,
+            "translation_placeholders": self._attr_translation_placeholders,
             "manufacturer": "Bestway",
             "model": "Spa",
             "sw_version": self.hass.data[DOMAIN].get("manifest_version", "unknown")
