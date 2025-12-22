@@ -6,10 +6,9 @@ This Home Assistant integration allows you to control your Bestway SmartHub-enab
 
 ## Installation
 
-1. Copy the `new_bestway_spa/` folder into `custom_components/` in your Home Assistant configuration directory.
-2. Restart Home Assistant.
-3. Go to **Settings > Devices & Services** and click **Add Integration**.
-4. Search for **Bestway Spa** and follow the configuration flow.
+
+Go to **Settings > Devices & Services** and click **Add Integration**.
+Search for **Bestway Spa** and follow the configuration flow.
 
 ---
 
@@ -49,10 +48,14 @@ This Home Assistant integration allows you to control your Bestway SmartHub-enab
 ### B. Install SSL Certificate
 > Required to decrypt HTTPS traffic
 
-#### Android (to be confirmed)
+#### Android
 - Visit `http://charlesproxy.com/getssl` on Phone B
+Phone will show an error, like Not connected to internet.
+Check the PC, Charles proxy is showing a dialog to accept the connection -> Click Allow.
 - Download the certificate
-- Install it: `Settings > Security > Encryption & credentials > Install from storage`
+- Install it: `Settings > Security > Encryption & credentials > Install from storage`.
+
+Older Android phone: Lock screen and security -> Other security settings -> (section Credential storage) -> Install from device storage -> select the "getssl.crt" file -> Select Used for VPN and Apps (other option is For WiFi)
 
 #### iOS
 - Open Safari: [https://chls.pro/ssl](https://chls.pro/ssl)
@@ -66,7 +69,8 @@ This Home Assistant integration allows you to control your Bestway SmartHub-enab
 
 In Charles:
 1. Go to `Proxy > SSL Proxying Settings`
-2. Click **Add**
+2. Select tab "SSL proxy"
+Click Plus button
 3. Set:
    - Host: `*`
    - Port: `443`
@@ -78,10 +82,22 @@ In Charles:
 # ⚠️*It is important to follow these steps in this direction in order to recover all the necessary identifiers.*
 
 1. Start recording in Charles (click the **●** button)
-2. Install the Bestway Smart Hub app on **Phone B**
-3. Open the Bestway Smart Hub
-4. Select **United Kingdom** region and scan the QR code
-5. Watch for requests like `thing_shadow`, `command`, or to `api.bestwaycorp`
+2. Install the Bestway Smart Hub app on **Phone B** >>>> SmartSpa
+3. Open the Bestway Smart Hub >>> SmartSpa
+4. Select **United Kingdom** 
+5. On Phone A open the existing Bestway app, select the device -> 3 dots -> Share the device -> Share the device -> QR code will appear
+Scan the QR code with Phone B
+Make sure the pairing was successful and you can control the Spa on Phone B
+Toggle Pump, Heater, Set temperature, etc, to log them
+Stop recording in Charles proxy
+Save session in Charles proxy
+Analyze recording. Note that Charles requires a license, or it will run only for 30 minutes. You can restart Charles and reload recording.
+Watch for requests like thing_shadow, command, or to api.bestwaycorp
+
+Alternatively: rename the recording file from .chlz to .zip and extract all the recorded data. Use Programmer's notepad, Search -> Find -> Find in files; Find what: enter the label we are looking for, for example "device_id", Find where: enter path to extracted files from .zip, File types: "*.json"
+
+Note that a new user will appear on Phone A under Guest users; if you remove it, the HA integration may stop working
+
 
 ---
 
@@ -100,7 +116,7 @@ In Charles:
 ### Additional:
 - `registration_id` and `client_id` can be found in `/api/enduser/visitor`
 - `device_id` and `product_id` may be in `/api/enduser/home/room/devices`
-
+- `Registration ID` may be empty or null - in such case type "null" here.
 ---
 
 ## Cleanup
