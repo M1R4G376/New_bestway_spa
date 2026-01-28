@@ -7,10 +7,7 @@ This Home Assistant integration allows you to control your Bestway SmartHub-enab
 ## Installation
 
 
-Go to **Settings > Devices & Services** and click **Add Integration**.
-Search for **Bestway Spa** and follow the configuration flow.
-
----
+[![HACS Installation](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=M1R4G376&repository=New_bestway_spa)
 
 ## Prerequisites
 
