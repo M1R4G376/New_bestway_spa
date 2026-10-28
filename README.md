@@ -9,6 +9,27 @@ This Home Assistant integration allows you to control your Bestway SmartHub-enab
 
 [![HACS Installation](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=M1R4G376&repository=New_bestway_spa)
 
+## Setup – Bestway Connect account (recommended)
+
+The Bestway Connect app now lets you create a user account (email + password). The integration can log in with it directly: no proxy, no certificate, no second phone.
+
+1. In the **Bestway Connect** app, create an account (or use the one you already have).
+2. Make sure the spa is on that account: either you are the owner, or the owner shares the spa with this account from the app.
+   *Tip:* a dedicated account for Home Assistant, with the spa shared to it, avoids any interference with the session on your phone.
+3. In Home Assistant: **Settings > Devices & Services > Add Integration > Bestway Smart Spa**
+4. Choose **Bestway Connect account**, enter email, password and region (`EU`, `US` or `CN`).
+5. Pick your spa in the list and give it a name.
+
+If the login works but no spa is found, try another region: accounts are sometimes registered in a different region than expected.
+
+If the password changes, Home Assistant will show a **Reconfigure** notification asking you to enter it again.
+
+---
+
+## Legacy setup – visitor IDs captured with a proxy
+
+> Only needed if you cannot use an account. Existing installations configured this way keep working unchanged.
+
 ## Prerequisites
 
 ### Required Equipment
@@ -127,6 +148,17 @@ Note that a new user will appear on Phone A under Guest users; if you remove it,
 
 ## Configuration Options
 
+### Account login
+
+| Field      | Required | Notes                                         |
+|------------|----------|-----------------------------------------------|
+| `email`    | ✅       | Bestway Connect account                       |
+| `password` | ✅       | Stored in the Home Assistant config entry     |
+| `region`   | ✅       | `EU`, `US` or `CN`                            |
+| spa        | ✅       | Chosen from the spas found on the account     |
+
+### Legacy (visitor)
+
 | Field            | Required | Notes                                      |
 |------------------|----------|--------------------------------------------|
 | `device_name`    | ✅       | Display name in Home Assistant             |
@@ -144,7 +176,9 @@ Note that a new user will appear on Phone A under Guest users; if you remove it,
 - `filter_state` returns `2` when active, `0` when off — the integration handles this automatically.
 - `select` gives the possibility to choose  the bubble/wave mode OFF/L1/L2 (not available from the official app)
 - To **turn on** any feature, the integration sends `1`. To **turn off**, it sends `0`.
-- All values are polled from `/api/device/thing_shadow/`
+- Account login: values are polled from `app/device/shadow/{productKey}/{mac}` on `smart-spa-{eu,us,cn}-app.bestwaycorp.com`
+- Legacy login: values are polled from `/api/device/thing_shadow/`
+- Account-gateway protocol documented by [jimsawinner/ha-bestway](https://github.com/jimsawinner/ha-bestway) (MIT)
 
 ---
 

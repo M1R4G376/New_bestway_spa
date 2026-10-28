@@ -1,10 +1,11 @@
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import ConfigEntryAuthFailed, ConfigEntryNotReady
+from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from datetime import timedelta
-from .const import DOMAIN
-from .spa_api import BestwaySpaAPI, authenticate
-import aiohttp
+from .const import AUTH_ACCOUNT, AUTH_LEGACY, CONF_AUTH_METHOD, DOMAIN
+from .spa_api import BestwayAccountAPI, BestwayApiError, BestwayAuthError, BestwaySpaAPI, authenticate
 import logging
 
 _LOGGER = logging.getLogger(__name__)
@@ -13,18 +14,30 @@ PLATFORMS = ["switch", "number", "sensor", "climate", "select", "button"]
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Bestway Spa from a config entry."""
 
-    session = aiohttp.ClientSession()
+    session = async_get_clientsession(hass)
 
-    token = await authenticate(session, entry.data)
-    if not token:
-        _LOGGER.error("Authentication failed: No token returned")
-        return False
+    if entry.data.get(CONF_AUTH_METHOD, AUTH_LEGACY) == AUTH_ACCOUNT:
+        api = BestwayAccountAPI(session, entry.data)
+        try:
+            await api.login()
+        except BestwayAuthError as err:
+            raise ConfigEntryAuthFailed(str(err)) from err
+        except BestwayApiError as err:
+            raise ConfigEntryNotReady(str(err)) from err
+    else:
+        token = await authenticate(session, entry.data)
+        if not token:
+            _LOGGER.error("Authentication failed: No token returned")
+            return False
 
-    api = BestwaySpaAPI(session, {**entry.data, "token": token})
+        api = BestwaySpaAPI(session, {**entry.data, "token": token})
 
     async def async_update_data():
         try:
             return await api.get_status()
+        except BestwayAuthError as err:
+            # Password changed / account removed: ask the user to log in again
+            raise ConfigEntryAuthFailed(str(err)) from err
         except Exception as err:
             raise UpdateFailed(f"Error fetching spa data: {err}") from err
 

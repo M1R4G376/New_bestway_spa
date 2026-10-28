@@ -1,7 +1,7 @@
 {
   "name": "New Bestway Spa",
   "content_in_root": false,
-  "homeassistant": "2024.0.0",
+  "homeassistant": "2024.11.0",
   "render_readme": true,
   "country": "FR",
   "zip_release": true,
