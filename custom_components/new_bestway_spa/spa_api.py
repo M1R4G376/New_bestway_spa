@@ -109,12 +109,38 @@ def _first(entry, *keys):
     return None
 
 
+_PRODUCT_KEY_KEYS = ("productKey", "product_key", "productkey", "pk")
+_MAC_KEYS = ("mac", "deviceMac", "device_mac", "macAddress", "did")
+_SECRET_KEYS = {"userToken", "token", "refreshToken", "password", "uid", "openId", "passcode"}
+
+
+def _walk_dicts(obj):
+    """Yield every dict found in a nested JSON structure."""
+    if isinstance(obj, dict):
+        yield obj
+        for value in obj.values():
+            yield from _walk_dicts(value)
+    elif isinstance(obj, list):
+        for value in obj:
+            yield from _walk_dicts(value)
+
+
+def _scrub(obj):
+    """Hide tokens/ids before logging."""
+    if isinstance(obj, dict):
+        return {k: ("***" if k in _SECRET_KEYS else _scrub(v)) for k, v in obj.items()}
+    if isinstance(obj, list):
+        return [_scrub(v) for v in obj]
+    return obj
+
+
 class BestwayAccountAPI:
     """Client for the account gateway, same interface as BestwaySpaAPI."""
 
     def __init__(self, session: aiohttp.ClientSession, config: dict):
         self.session = session
-        self.base_url = ACCOUNT_ENDPOINTS.get(config.get("region", "EU"), ACCOUNT_ENDPOINTS["EU"])
+        self.region = config.get("region", "EU")
+        self.base_url = ACCOUNT_ENDPOINTS.get(self.region, ACCOUNT_ENDPOINTS["EU"])
         self.email = config["email"]
         self.password = config["password"]
         self.product_key = config.get("product_key")
@@ -197,29 +223,29 @@ class BestwayAccountAPI:
         data = result.get("data")
         _LOGGER.debug("Device list response: %s", data)
 
-        # Shape not fully documented: accept a bare list or a wrapped one.
-        if isinstance(data, dict):
-            raw_list = _first(data, "list", "devices", "deviceList", "records") or []
-        elif isinstance(data, list):
-            raw_list = data
-        else:
-            raw_list = []
-
+        # Shape not fully documented (flat list, wrapped list, or nested under
+        # homes/rooms): collect every dict carrying a productKey and a mac.
         devices = []
-        for entry in raw_list:
-            if not isinstance(entry, dict):
+        seen = set()
+        for entry in _walk_dicts(data):
+            product_key = _first(entry, *_PRODUCT_KEY_KEYS)
+            mac = _first(entry, *_MAC_KEYS)
+            if not product_key or not mac or str(mac).lower() in seen:
                 continue
-            product_key = _first(entry, "productKey", "product_key", "productkey")
-            mac = _first(entry, "mac", "deviceMac", "device_mac", "did")
-            if not product_key or not mac:
-                _LOGGER.debug("Skipping device entry without productKey/mac: %s", list(entry))
-                continue
+            seen.add(str(mac).lower())
             devices.append({
                 "product_key": str(product_key),
                 "mac": str(mac).lower(),
                 "name": str(_first(entry, "name", "alias", "deviceName", "nickname", "remark", "productName") or "Spa"),
                 "online": bool(_first(entry, "onlineStatus", "isOnline", "is_online", "online")),
             })
+
+        if not devices:
+            # Visible without debug logging, so users can report the shape
+            _LOGGER.warning(
+                "No spa found in the Bestway device list (region %s). Response: %s",
+                self.region, json.dumps(_scrub(data), ensure_ascii=False)[:2000],
+            )
         return devices
 
     async def get_status(self):

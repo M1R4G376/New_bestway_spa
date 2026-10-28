@@ -62,6 +62,17 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 CONF_REGION: user_input[CONF_REGION],
             }
             devices, error = await self._login_and_list(account)
+            if error == "no_devices":
+                # Accounts are often registered in another region than expected
+                for region in ACCOUNT_ENDPOINTS:
+                    if region == account[CONF_REGION]:
+                        continue
+                    other = {**account, CONF_REGION: region}
+                    other_devices, other_error = await self._login_and_list(other)
+                    if not other_error:
+                        _LOGGER.info("Spa found in region %s instead of %s", region, account[CONF_REGION])
+                        account, devices, error = other, other_devices, None
+                        break
             if error:
                 errors["base"] = error
             else:
