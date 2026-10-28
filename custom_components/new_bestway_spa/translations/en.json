@@ -3,66 +3,152 @@
   "config": {
     "step": {
       "user": {
-        "title": "Connect to Bestway Spa",
-        "description": "Enter your API credentials to connect your Bestway Smart Spa.",
+        "title": "Bestway Spa",
+        "description": "How do you want to sign in?",
+        "menu_options": {
+          "account": "Bestway Connect account (email + password)",
+          "legacy": "Legacy: visitor IDs captured with a proxy"
+        }
+      },
+      "account": {
+        "title": "Sign in to Bestway Connect",
+        "description": "Use the account you created in the Bestway Connect app. The spa must be on this account (owned or shared with it).",
+        "data": {
+          "email": "Email",
+          "password": "Password",
+          "region": "Region"
+        }
+      },
+      "device": {
+        "title": "Choose your spa",
+        "data": {
+          "mac": "Spa",
+          "device_name": "Device Name"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Sign in again",
+        "description": "The Bestway login for {email} no longer works. Enter the password again.",
+        "data": {
+          "password": "Password"
+        }
+      },
+      "legacy": {
+        "title": "Legacy connection (visitor)",
+        "description": "Enter the identifiers captured from the app traffic.",
         "data": {
           "device_name": "Device Name",
-          "token": "API Token",
+          "visitor_id": "Visitor ID",
+          "registration_id": "Registration ID",
           "device_id": "Device ID",
           "product_id": "Product ID",
           "push_type": "Push Type (fcm or apns)",
           "client_id": "Client ID (optional)",
-          "registration_id": "Registration ID"
+          "api_host": "API host",
+          "location": "Location"
         }
       }
     },
     "error": {
-      "invalid_auth": "Invalid authentication",
+      "invalid_auth": "Invalid email or password",
       "cannot_connect": "Failed to connect",
+      "no_devices": "No spa found on this account (all regions tried). Open the Bestway Connect app logged in with this same account and check you can control the spa; if it is missing, share it with this account, then try again.",
       "unknown": "Unknown error"
     },
     "abort": {
-      "already_configured": "This spa is already configured."
+      "already_configured": "This spa is already configured.",
+      "reauth_successful": "Sign-in updated."
     }
   },
   "entity": {
     "button": {
-      "filter_last_change": { "name": "Reset Days Since Filter"},
-      "chlorine_last_add":{ "name": "Reset Days Since Chlorine" }
+      "filter_last_change": {
+        "name": "Reset Days Since Filter"
+      },
+      "chlorine_last_add": {
+        "name": "Reset Days Since Chlorine"
+      }
     },
     "climate": {
-      "thermostat": { "name": "Thermostat" }
+      "thermostat": {
+        "name": "Thermostat"
+      }
     },
     "switch": {
-      "power_state": { "name": "Spa Power" },
-      "filter_state": { "name": "Filter" },
-      "heater_state": { "name": "Heater" },
-      "hydrojet_state": { "name": "Hydrojet" },
+      "power_state": {
+        "name": "Spa Power"
+      },
+      "filter_state": {
+        "name": "Filter"
+      },
+      "heater_state": {
+        "name": "Heater"
+      },
+      "hydrojet_state": {
+        "name": "Hydrojet"
+      },
       "wave_state": {
         "name": "Bubbles / Wave",
-        "state_attributes": { "bubble_level": {"name": "Bubble Level" }, "wave_state_value": {"name": "Wave State Value" } }
+        "state_attributes": {
+          "bubble_level": {
+            "name": "Bubble Level"
+          },
+          "wave_state_value": {
+            "name": "Wave State Value"
+          }
+        }
       }
     },
     "number": {
-      "temperature_setting": { "name": "Target Temperature" }
+      "temperature_setting": {
+        "name": "Target Temperature"
+      }
     },
     "select": {
-      "bubble_mode": { "name": "Bubbles" }
+      "bubble_mode": {
+        "name": "Bubbles"
+      }
     },
     "sensor": {
-      "filter_last_change": { "name": "Days Since Filter" },
-      "chlorine_last_add": { "name": "Days Since Chlorine" },
-      "water_temperature": { "name": "Water Temperature" },
-      "is_online": { "name": "Connection Status" },
-      "temperature_unit": { "name": "Temperature Unit" },
-      "warning": { "name": "Warning" },
-      "error_code": { "name": "Error Code" },
-      "hydrojet_state": { "name": "Hydrojet" },
-      "connect_type": { "name": "Connection Type" },
-      "wifi_version": { "name": "WiFi Version" },
-      "ota_status": { "name": "OTA Status" },
-      "mcu_version": { "name": "MCU Version" },
-      "trd_version": { "name": "TRD Version" }
+      "filter_last_change": {
+        "name": "Days Since Filter"
+      },
+      "chlorine_last_add": {
+        "name": "Days Since Chlorine"
+      },
+      "water_temperature": {
+        "name": "Water Temperature"
+      },
+      "is_online": {
+        "name": "Connection Status"
+      },
+      "temperature_unit": {
+        "name": "Temperature Unit"
+      },
+      "warning": {
+        "name": "Warning"
+      },
+      "error_code": {
+        "name": "Error Code"
+      },
+      "hydrojet_state": {
+        "name": "Hydrojet"
+      },
+      "connect_type": {
+        "name": "Connection Type"
+      },
+      "wifi_version": {
+        "name": "WiFi Version"
+      },
+      "ota_status": {
+        "name": "OTA Status"
+      },
+      "mcu_version": {
+        "name": "MCU Version"
+      },
+      "trd_version": {
+        "name": "TRD Version"
+      }
     }
   }
 }

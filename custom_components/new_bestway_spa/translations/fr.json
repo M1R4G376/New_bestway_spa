@@ -3,66 +3,155 @@
   "config": {
     "step": {
       "user": {
-        "title": "Connexion au spa Bestway",
-        "description": "Saisissez vos identifiants API pour connecter votre spa Bestway.",
+        "title": "Spa Bestway",
+        "description": "Comment voulez-vous vous connecter ?",
+        "menu_options": {
+          "account": "Compte Bestway Connect (e-mail + mot de passe)",
+          "legacy": "Ancienne méthode : identifiants visiteur capturés au proxy"
+        }
+      },
+      "account": {
+        "title": "Connexion à Bestway Connect",
+        "description": "Utilisez le compte créé dans l'application Bestway Connect. Le spa doit être associé à ce compte (propriétaire ou partagé).",
+        "data": {
+          "email": "E-mail",
+          "password": "Mot de passe",
+          "region": "Région"
+        }
+      },
+      "device": {
+        "title": "Choisissez votre spa",
+        "data": {
+          "mac": "Spa",
+          "device_name": "Nom du périphérique"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Reconnexion",
+        "description": "La connexion Bestway pour {email} ne fonctionne plus. Saisissez à nouveau le mot de passe.",
+        "data": {
+          "password": "Mot de passe"
+        }
+      },
+      "legacy": {
+        "title": "Connexion ancienne méthode (visiteur)",
+        "description": "Saisissez les identifiants récupérés dans le trafic de l'application.",
         "data": {
           "device_name": "Nom du périphérique",
-          "token": "Jeton API",
+          "visitor_id": "Visitor ID",
+          "registration_id": "Registration ID",
           "device_id": "ID du périphérique",
           "product_id": "ID du produit",
           "push_type": "Type de push (fcm ou apns)",
           "client_id": "Client ID (optionnel)",
-          "registration_id": "Registration ID"
+          "api_host": "Hôte API",
+          "location": "Pays"
         }
       }
     },
     "error": {
-      "invalid_auth": "Authentification invalide",
+      "invalid_auth": "E-mail ou mot de passe invalide",
       "cannot_connect": "Connexion impossible",
+      "no_devices": "Aucun spa trouvé sur ce compte (toutes les régions essayées). Ouvrez l'application Bestway Connect connecté avec ce même compte et vérifiez que vous pouvez piloter le spa ; s'il n'apparaît pas, partagez-le avec ce compte, puis réessayez.",
       "unknown": "Erreur inconnue"
     },
     "abort": {
-      "already_configured": "Ce spa est déjà configuré."
+      "already_configured": "Ce spa est déjà configuré.",
+      "reauth_successful": "Connexion mise à jour."
     }
   },
   "entity": {
     "button": {
-      "filter_last_change": { "name": "Réinitialiser Les Jours Depuis Le Filtre"},
-      "chlorine_last_add": { "name": "Réinitialiser Les Jours Depuis Le Chlore" }
+      "filter_last_change": {
+        "name": "Réinitialiser Les Jours Depuis Le Filtre"
+      },
+      "chlorine_last_add": {
+        "name": "Réinitialiser Les Jours Depuis Le Chlore"
+      }
     },
     "climate": {
-      "thermostat": { "name": "Thermostat" }
+      "thermostat": {
+        "name": "Thermostat"
+      }
     },
     "switch": {
-      "power_state": { "name": "Alimentation du spa" },
-      "filter_state": { "name": "Filtration" },
-      "heater_state": { "name": "Chauffage" },
-      "hydrojet_state": { "name": "Hydrojet" },
-      "wave_state": { 
+      "power_state": {
+        "name": "Alimentation du spa"
+      },
+      "filter_state": {
+        "name": "Filtration"
+      },
+      "heater_state": {
+        "name": "Chauffage"
+      },
+      "hydrojet_state": {
+        "name": "Hydrojet"
+      },
+      "wave_state": {
         "name": "Bulles / Vague",
-        "state_attributes": { "bubble_level": { "name": "Niveau Bulles" }, "wave_state_value": { "name": "Valeur Wave State" } }
+        "state_attributes": {
+          "bubble_level": {
+            "name": "Niveau Bulles"
+          },
+          "wave_state_value": {
+            "name": "Valeur Wave State"
+          }
+        }
       }
     },
     "number": {
-      "temperature_setting": { "name": "Température cible" }
+      "temperature_setting": {
+        "name": "Température cible"
+      }
     },
     "select": {
-      "bubble_mode": { "name": "Bulles", "state": { "Off":"Désactivé" } }
+      "bubble_mode": {
+        "name": "Bulles",
+        "state": {
+          "Off": "Désactivé"
+        }
+      }
     },
     "sensor": {
-      "filter_last_change": { "name": "Jours Depuis le Filtre" },
-      "chlorine_last_add": { "name": "Jours Depuis le Chlore" },
-      "water_temperature": { "name": "Température de l'eau" },
-      "is_online": { "name": "Statut de connexion" },
-      "temperature_unit": { "name": "Unité de température" },
-      "warning": { "name": "Avertissement" },
-      "error_code": { "name": "Code d'erreur" },
-      "hydrojet_state": { "name": "Hydrojet" },
-      "connect_type": { "name": "Type de connexion" },
-      "wifi_vertion": { "name": "Version WiFi" },
-      "ota_status": { "name": "Statut OTA" },
-      "mcu_version": { "name": "Version MCU" },
-      "trd_version": { "name": "Version TRD" }
+      "filter_last_change": {
+        "name": "Jours Depuis le Filtre"
+      },
+      "chlorine_last_add": {
+        "name": "Jours Depuis le Chlore"
+      },
+      "water_temperature": {
+        "name": "Température de l'eau"
+      },
+      "is_online": {
+        "name": "Statut de connexion"
+      },
+      "temperature_unit": {
+        "name": "Unité de température"
+      },
+      "warning": {
+        "name": "Avertissement"
+      },
+      "error_code": {
+        "name": "Code d'erreur"
+      },
+      "hydrojet_state": {
+        "name": "Hydrojet"
+      },
+      "connect_type": {
+        "name": "Type de connexion"
+      },
+      "wifi_vertion": {
+        "name": "Version WiFi"
+      },
+      "ota_status": {
+        "name": "Statut OTA"
+      },
+      "mcu_version": {
+        "name": "Version MCU"
+      },
+      "trd_version": {
+        "name": "Version TRD"
+      }
     }
   }
 }
