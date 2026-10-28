@@ -52,7 +52,7 @@
     "error": {
       "invalid_auth": "Invalid email or password",
       "cannot_connect": "Failed to connect",
-      "no_devices": "No spa found on this account. Check the region, or share the spa with this account from the app.",
+      "no_devices": "No spa found on this account (all regions tried). Open the Bestway Connect app logged in with this same account and check you can control the spa; if it is missing, share it with this account, then try again.",
       "unknown": "Unknown error"
     },
     "abort": {

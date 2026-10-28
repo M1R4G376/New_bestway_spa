@@ -20,7 +20,18 @@ The Bestway Connect app now lets you create a user account (email + password). T
 4. Choose **Bestway Connect account**, enter email, password and region (`EU`, `US` or `CN`).
 5. Pick your spa in the list and give it a name.
 
-If the login works but no spa is found, try another region: accounts are sometimes registered in a different region than expected.
+The integration tries the other regions automatically if the selected one returns no spa.
+
+### Troubleshooting: "No spa found on this account"
+
+The login works but Bestway returns an empty device list. This happens when the spa is not yet linked to the account on the new Bestway gateway, for example when it was paired with an older version of the app, before the account existed.
+
+1. Open the **Bestway Connect** app logged in with **the same account** you use in Home Assistant.
+2. Check that the spa is listed and that you can control it from the app.
+3. If it is not listed, share it with this account from the owner's phone and accept the invitation (or pair it again from this account).
+4. Add the integration again in Home Assistant.
+
+If it still fails, the Home Assistant log contains a line `No spa found in the Bestway device list…` with the server response (tokens masked): please attach it to an issue.
 
 If the password changes, Home Assistant will show a **Reconfigure** notification asking you to enter it again.
 
