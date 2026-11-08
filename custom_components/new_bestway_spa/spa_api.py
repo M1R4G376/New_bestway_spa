@@ -11,10 +11,10 @@ import aiohttp
 _LOGGER = logging.getLogger(__name__)
 
 
-def normalize_shadow(raw_data):
-    """Map a device shadow (legacy or account gateway) to the entity keys."""
+def _unwrap_shadow(raw_data):
+    """Return the flat datapoint dict from a shadow ({state: {reported: ...}} or flat)."""
     if not isinstance(raw_data, dict):
-        raw_data = {}
+        return {}
 
     if "state" in raw_data:
         if "reported" in raw_data["state"]:
@@ -28,6 +28,17 @@ def normalize_shadow(raw_data):
             _LOGGER.debug("Found state object: %s", device_state)
     else:
         device_state = raw_data
+    return device_state
+
+
+def normalize_shadow(raw_data):
+    """Map a device shadow (legacy or account gateway) to the entity keys."""
+    device_state = _unwrap_shadow(raw_data)
+
+    if _is_v01_shadow(device_state):
+        mapped = _normalize_v01(device_state)
+        _LOGGER.debug("Normalized data (V01 vocabulary): %s", mapped)
+        return mapped
 
     is_online = device_state.get("is_online")
     connect_type = device_state.get("ConnectType")
@@ -57,6 +68,85 @@ def normalize_shadow(raw_data):
     _LOGGER.debug("Normalized data: %s", mapped)
     return mapped
 
+
+
+# ---------------------------------------------------------------------------
+# V01 vocabulary (older Lay-Z-Spa Airjet_V01 / Hydrojet, e.g. Toronto, issue #36)
+#
+# Some spas report Gizwits-style datapoints instead of the V02 names:
+#   power, heat, filter, wave, jet, Tnow, Tset, Tunit, E01..E32
+# Semantics as in cdpuk/ha-bestway (translation.py): heat 0=off, 4=target
+# reached, other=heating; Tunit 0=F else C; E32 is not an error.
+# ---------------------------------------------------------------------------
+
+_V01_MARKERS = ("Tnow", "Tset", "heat")
+_E_CODE_KEYS = [f"E{i:02d}" for i in range(1, 33)]
+
+# entity key -> V01 datapoint used for writes
+_V01_WRITE_KEYS = {
+    "power_state": "power",
+    "heater_state": "heat",
+    "filter_state": "filter",
+    "wave_state": "wave",
+    "hydrojet_state": "jet",
+    "temperature_setting": "Tset",
+}
+# V01 "on" values (cdpuk HydrojetHeat.ON = 3, HydrojetFilter.ON = 2)
+_V01_ON_VALUES = {"heat": 3, "filter": 2, "power": 1, "jet": 1}
+
+
+def _is_v01_shadow(state):
+    return isinstance(state, dict) and any(k in state for k in _V01_MARKERS) \
+        and "water_temperature" not in state
+
+
+def _int_or_none(value):
+    if value is None:
+        return None
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def _normalize_v01(state):
+    power = state.get("power")
+    filt = _int_or_none(state.get("filter"))
+    tunit = state.get("Tunit")
+    errors = [k for k in _E_CODE_KEYS if k != "E32" and state.get(k)]
+    return {
+        "wifi_version": None,
+        "ota_status": None,
+        "mcu_version": None,
+        "trd_version": None,
+        "connect_type": None,
+        "power_state": None if power is None else int(bool(power)),
+        "heater_state": _int_or_none(state.get("heat")),
+        "wave_state": _int_or_none(state.get("wave")),
+        # switch.py treats 2 as "filtering"
+        "filter_state": None if filt is None else (2 if filt else 0),
+        "temperature_setting": _int_or_none(state.get("Tset")),
+        "temperature_unit": None if tunit is None else (0 if _int_or_none(tunit) == 0 else 1),
+        "water_temperature": _int_or_none(state.get("Tnow")),
+        "warning": None,
+        "error_code": ",".join(errors) if errors else 0,
+        "hydrojet_state": None if state.get("jet") is None else int(bool(state.get("jet"))),
+        "is_online": True,
+    }
+
+
+def _to_v01_command(key, value):
+    """Translate an entity write into the V01 datapoint, or None if unknown."""
+    v01_key = _V01_WRITE_KEYS.get(key)
+    if v01_key is None:
+        return None
+    if v01_key == "Tset":
+        return v01_key, int(value)
+    if v01_key == "wave":
+        # 0 = off; the select sends 1 to step levels, use 100 (max) for "on"
+        value = int(value)
+        return v01_key, (0 if value == 0 else (value if value > 1 else 100))
+    return v01_key, (_V01_ON_VALUES[v01_key] if value else 0)
 
 # ---------------------------------------------------------------------------
 # Account login (Bestway Connect app, email + password)
@@ -146,6 +236,7 @@ class BestwayAccountAPI:
         self.product_key = config.get("product_key")
         self.mac = (config.get("mac") or "").lower()
         self.token = None
+        self.v01 = False
 
     def _headers(self, body):
         headers = {
@@ -251,12 +342,18 @@ class BestwayAccountAPI:
     async def get_status(self):
         result = await self._request("GET", f"app/device/shadow/{self.product_key}/{self.mac}")
         _LOGGER.debug("Full API response: %s", result)
-        return normalize_shadow(result.get("data"))
+        data = result.get("data")
+        self.v01 = _is_v01_shadow(_unwrap_shadow(data))
+        return normalize_shadow(data)
 
     async def set_state(self, key, value):
         if isinstance(value, bool):
             value = int(value)
-        if key in _BINARY_KEYS:
+        if self.v01:
+            command = _to_v01_command(key, value)
+            if command is not None:
+                key, value = command
+        elif key in _BINARY_KEYS:
             value = 1 if value else 0
 
         # "data" MUST be a JSON string: an object returns 200 and does nothing.
